@@ -1,6 +1,6 @@
 from __future__ import annotations
 import os
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
@@ -14,7 +14,6 @@ app = FastAPI(
     version="1.0.0",
 )
 
-# One global env instance per server process
 env = EmailTriageEnv()
 
 
@@ -32,13 +31,11 @@ class StepRequest(BaseModel):
 
 @app.get("/health")
 def health():
-    """Ping endpoint — judges check this first."""
     return {"status": "ok"}
 
 
 @app.get("/")
 def root():
-    """Root endpoint — also returns 200 for HF Space ping."""
     return {
         "name": "email-triage-env",
         "version": "1.0.0",
@@ -48,14 +45,14 @@ def root():
 
 
 @app.post("/reset")
-def reset(request: ResetRequest):
+def reset(request: Optional[ResetRequest] = None):
     """
     Reset the environment for a given task.
-    Body: {"task": "label" | "prioritize" | "reply"}
-    Returns: initial observation
+    Body is optional — defaults to task=label if no body sent.
     """
+    task = request.task if request else "label"
     try:
-        obs = env.reset(request.task)
+        obs = env.reset(task)
         return {
             "observation": obs.model_dump(),
             "info": {},
@@ -69,12 +66,10 @@ def step(request: StepRequest):
     """
     Take one action in the environment.
     Body: {"action": {...}}
-    Returns: observation, reward, done, info
     """
     try:
         obs, reward, done, info = env.step(request.action)
 
-        # If episode just ended, attach final grader score
         if done:
             final_score, final_reason = env.final_score()
             info["final_score"] = final_score
@@ -92,10 +87,7 @@ def step(request: StepRequest):
 
 @app.post("/state")
 def state():
-    """
-    Return full internal environment state.
-    No body required.
-    """
+    """Return full internal environment state."""
     try:
         s = env.state()
         return {"state": s.model_dump()}
@@ -105,10 +97,7 @@ def state():
 
 @app.post("/score")
 def score():
-    """
-    Run the grader and return the final episode score.
-    Call after done=True.
-    """
+    """Run the grader and return final episode score."""
     try:
         final_score, reason = env.final_score()
         return {
