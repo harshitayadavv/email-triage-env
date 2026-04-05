@@ -16,7 +16,11 @@ dependencies = [
     "requests",
     "numpy",
     "python-multipart",
+    "openenv-core>=0.2.0",
 ]
+
+[project.scripts]
+server = "env.server:app"
 
 [tool.openenv]
 name = "email-triage-env"
