@@ -46,10 +46,6 @@ def root():
 
 @app.post("/reset")
 def reset(request: Optional[ResetRequest] = None):
-    """
-    Reset the environment for a given task.
-    Body is optional — defaults to task=label if no body sent.
-    """
     task = request.task if request else "label"
     try:
         obs = env.reset(task)
@@ -63,10 +59,6 @@ def reset(request: Optional[ResetRequest] = None):
 
 @app.post("/step")
 def step(request: StepRequest):
-    """
-    Take one action in the environment.
-    Body: {"action": {...}}
-    """
     try:
         obs, reward, done, info = env.step(request.action)
 
@@ -87,7 +79,6 @@ def step(request: StepRequest):
 
 @app.post("/state")
 def state():
-    """Return full internal environment state."""
     try:
         s = env.state()
         return {"state": s.model_dump()}
@@ -97,7 +88,6 @@ def state():
 
 @app.post("/score")
 def score():
-    """Run the grader and return final episode score."""
     try:
         final_score, reason = env.final_score()
         return {
@@ -110,7 +100,11 @@ def score():
 
 # ── Entry point ──────────────────────────────────────────────────────────────
 
-if __name__ == "__main__":
+def main():
     import uvicorn
     port = int(os.getenv("PORT", 7860))
     uvicorn.run("env.server:app", host="0.0.0.0", port=port, reload=False)
+
+
+if __name__ == "__main__":
+    main()
