@@ -1,0 +1,58 @@
+name: email-triage-env
+version: "1.0.0"
+description: "RL environment for email triage — label, prioritize, and reply to corporate emails"
+author: ""
+tags:
+  - openenv
+  - email
+  - triage
+  - nlp
+  - real-world
+
+tasks:
+  - id: label
+    name: "Email labeling"
+    description: "Label 8 emails as spam, urgent, fyi, or action-needed"
+    difficulty: easy
+    max_steps: 16
+    success_threshold: 0.5
+
+  - id: prioritize
+    name: "Priority ranking"
+    description: "Rank 10 emails from most to least urgent"
+    difficulty: medium
+    max_steps: 3
+    success_threshold: 0.5
+
+  - id: reply
+    name: "Complaint reply drafting"
+    description: "Draft a professional reply addressing all 3 issues in a customer complaint"
+    difficulty: hard
+    max_steps: 6
+    success_threshold: 0.5
+
+observation_space:
+  type: object
+  properties:
+    task:
+      type: string
+    instructions:
+      type: string
+    emails:
+      type: array
+    actions_taken:
+      type: array
+    step:
+      type: integer
+    done:
+      type: boolean
+
+action_space:
+  type: object
+  description: "label(email_id, label) | rank(order) | reply(email_id, body)"
+
+api:
+  reset: POST /reset
+  step: POST /step
+  state: POST /state
+  health: GET /health

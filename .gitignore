@@ -1,0 +1,11 @@
+venv/
+__pycache__/
+*.pyc
+.env
+*.egg-info/
+dist/
+.pytest_cache/
+test_step4.py
+test_step5.py
+test_step6.py
+debug_llm.py
